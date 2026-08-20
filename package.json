@@ -1,0 +1,14 @@
+{
+  "name": "autoreplay-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FB Marketplace semi-auto reply system",
+  "type": "module",
+  "main": "phase1Runner.js",
+  "scripts": {
+    "phase1": "node phase1Runner.js"
+  },
+  "dependencies": {
+    "playwright": "^1.62.1"
+  }
+}
