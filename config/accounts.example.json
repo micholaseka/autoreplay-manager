@@ -1,0 +1,16 @@
+{
+  "accounts": [
+    {
+      "id": "account-001",
+      "name": "Toko Laptop A",
+      "profile": "account-001",
+      "enabled": true
+    },
+    {
+      "id": "account-002",
+      "name": "Toko Laptop B",
+      "profile": "account-002",
+      "enabled": false
+    }
+  ]
+}
