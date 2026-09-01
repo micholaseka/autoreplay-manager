@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.*
+!.env.example
+
+profiles/
+logs/
+
+dist/
+build/
+
+*.log
+
+.DS_Store
