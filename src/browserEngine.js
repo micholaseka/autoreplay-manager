@@ -34,7 +34,7 @@ class BrowserEngine {
       this.contexts.set(account.id, context);
     }
 
-    return context.pages()[0] || context.newPage();
+    return context.newPage();
   }
 
   async checkAccount(account) {
@@ -44,29 +44,41 @@ class BrowserEngine {
       await this.notifyIfActionable(account.id, result);
       return result;
     } catch (error) {
-      console.error(`[browserEngine] Akun ${account.id} gagal dicek: ${error.message}`);
+      console.error(
+        `[browserEngine] Akun ${account.id} gagal dicek: ${error.message}`,
+      );
       return { status: "error", accountId: account.id, error: error.message };
     }
   }
 
   async notifyIfActionable(accountId, result) {
-    const isActionable = result.status !== "ok" || result.unreadCount > 0;
-    const signature = `${result.status}:${result.unreadCount}`;
+    const isError = result.status === "error";
+    const isActionable = isError || result.unreadCount > 0;
+    const signature = `result.status:{result.status}:result.status:{result.unreadCount}`;
 
-    if (!isActionable || !this.notifier || this.lastNotified.get(accountId) === signature) {
-      return;
-    }
+    if (!isActionable || !this.notifier) return;
+    if (!isError && this.lastNotified.get(accountId) === signature) return; // dedup cuma untuk inbox normal
+    // ...
 
     const sent = await this.notifier.notifyInbox(result);
     if (sent) this.lastNotified.set(accountId, signature);
   }
 
   async runCycle(accounts) {
-    return Promise.all(accounts.map((account) => this.checkAccount(account)));
+    const results = [];
+    for (const account of accounts) {
+      results.push(await this.checkAccount(account));
+      // jeda acak antar akun biar gak kelihatan robot
+      const jeda = 2000 + Math.random() * 4000;
+      await new Promise((r) => setTimeout(r, jeda));
+    }
+    return results;
   }
 
   async close() {
-    await Promise.all([...this.contexts.values()].map((context) => context.close()));
+    await Promise.all(
+      [...this.contexts.values()].map((context) => context.close()),
+    );
     this.contexts.clear();
   }
 }
