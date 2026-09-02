@@ -1,0 +1,20 @@
+[
+  {
+    "id": "akun1",
+    "nama": "akun01",
+    "username": "marketplace",
+    "aktif": true
+  },
+  {
+    "id": "akun2",
+    "nama": "akun2",
+    "username": "marketplace2",
+    "aktif": true
+  },
+  {
+    "id": "akun3",
+    "nama": "akun3",
+    "username": "marketplace3",
+    "aktif": false
+  }
+]
