@@ -4,7 +4,8 @@ const FACEBOOK_HOME_URL = "https://www.facebook.com/";
 const MARKETPLACE_INBOX_URL = "https://www.facebook.com/marketplace/inbox/";
 const LOGIN_URL_PATTERN = /\/login|checkpoint/i;
 const REDIRECT_LOOP_CODE = "ERR_TOO_MANY_REDIRECTS";
-const TIME_LINE_PATTERN = /\b(\d{1,2}[:.]\d{2}|hari ini|kemarin|today|yesterday|sen|sel|rab|kam|jum|sab|min|mon|tue|wed|thu|fri|sat|sun|\d{1,2}\s+(jan|feb|mar|apr|mei|jun|jul|agu|sep|okt|nov|des))/i;
+const TIME_LINE_PATTERN =
+  /\b(\d{1,2}[:.]\d{2}|hari ini|kemarin|today|yesterday|sen|sel|rab|kam|jum|sab|min|mon|tue|wed|thu|fri|sat|sun|\d{1,2}\s+(jan|feb|mar|apr|mei|jun|jul|agu|sep|okt|nov|des))/i;
 
 function accountName(account) {
   return account.nama || account.username || account.id;
@@ -23,10 +24,14 @@ function extractConversationFromText({ text, ariaLabel, dateTime }) {
     .split("\n")
     .map(cleanLine)
     .filter((line) => line && !/^(unread|belum dibaca)$/i.test(line));
-  const timestamp = dateTime || lines.find((line) => TIME_LINE_PATTERN.test(line)) || "Tidak tersedia";
+  const timestamp =
+    dateTime ||
+    lines.find((line) => TIME_LINE_PATTERN.test(line)) ||
+    "Tidak tersedia";
   const contentLines = lines.filter((line) => line !== timestamp);
   const customerName = contentLines[0] || ariaLabel || "Tidak diketahui";
-  const message = contentLines.slice(1).join(" ") || "Preview pesan tidak tersedia";
+  const message =
+    contentLines.slice(1).join(" ") || "Preview pesan tidak tersedia";
 
   return {
     customerName,
@@ -53,7 +58,11 @@ function deduplicateConversations(conversations) {
 
 async function hasVisibleLocator(page, selectorList) {
   for (const selector of selectorList) {
-    const isVisible = await page.locator(selector).first().isVisible().catch(() => false);
+    const isVisible = await page
+      .locator(selector)
+      .first()
+      .isVisible()
+      .catch(() => false);
     if (isVisible) return true;
   }
 
@@ -61,25 +70,36 @@ async function hasVisibleLocator(page, selectorList) {
 }
 
 async function requiresLogin(page) {
-  return LOGIN_URL_PATTERN.test(page.url()) || hasVisibleLocator(page, selectors.login);
+  return (
+    LOGIN_URL_PATTERN.test(page.url()) ||
+    hasVisibleLocator(page, selectors.login)
+  );
 }
 
 async function extractUnreadConversations(page) {
   const unreadSelector = selectors.unreadConversation.join(", ");
-  const rawConversations = await page.locator(unreadSelector).evaluateAll((badges, containerSelector) => {
-    return badges.map((badge) => {
-      const container = badge.closest(containerSelector) || badge.parentElement;
-      const timestampElement = container?.querySelector("time");
+  const rawConversations = await page
+    .locator(unreadSelector)
+    .evaluateAll((badges, containerSelector) => {
+      return badges.map((badge) => {
+        const container =
+          badge.closest(containerSelector) || badge.parentElement;
+        const timestampElement = container?.querySelector("time");
 
-      return {
-        text: container?.innerText || badge.getAttribute("aria-label") || "",
-        ariaLabel: badge.getAttribute("aria-label") || "",
-        dateTime: timestampElement?.getAttribute("datetime") || timestampElement?.textContent || "",
-      };
-    });
-  }, selectors.conversationContainer);
+        return {
+          text: container?.innerText || badge.getAttribute("aria-label") || "",
+          ariaLabel: badge.getAttribute("aria-label") || "",
+          dateTime:
+            timestampElement?.getAttribute("datetime") ||
+            timestampElement?.textContent ||
+            "",
+        };
+      });
+    }, selectors.conversationContainer);
 
-  return deduplicateConversations(rawConversations.map(extractConversationFromText));
+  return deduplicateConversations(
+    rawConversations.map(extractConversationFromText),
+  );
 }
 
 class InboxWatcher {
